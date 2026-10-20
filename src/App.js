@@ -100,7 +100,7 @@ function App() {
         <header className="header">
           <div>
             <div className="terminal-text">$ weather</div>
-            <h1>Weather Dashboard</h1>
+            <h1>Weather Dashboard v2</h1>
           </div>
 
           <div className="live">
