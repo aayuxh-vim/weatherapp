@@ -1,70 +1,78 @@
-# Getting Started with Create React App
+# Weather Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React-based Weather Dashboard with a Gruvbox-inspired interface.
 
-## Available Scripts
+The application uses the Open-Meteo API to fetch weather information based
+on the city entered by the user.
 
-In the project directory, you can run:
+## Technologies Used
 
-### `npm start`
+- React
+- JavaScript
+- Open-Meteo API
+- Docker
+- Nginx
+- Jenkins
+- Docker Hub
+- Kubernetes
+- Minikube
+- GitHub
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Application Features
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Search weather by city
+- Display current temperature
+- Display humidity
+- Display wind speed
+- Display atmospheric pressure
+- Display 5-day weather forecast
+- Gruvbox-inspired user interface
 
-### `npm test`
+## CI/CD Pipeline
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The project uses Jenkins to automate the following workflow:
 
-### `npm run build`
+1. Jenkins checks out the latest source code from GitHub.
+2. Node.js dependencies are installed using `npm ci`.
+3. Automated tests are executed.
+4. The React application is built.
+5. A Docker image is created.
+6. The Docker image is pushed to Docker Hub.
+7. Kubernetes manifests are applied to Minikube.
+8. The Kubernetes deployment is restarted and verified.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Docker
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The application uses a multi-stage Docker build.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The React application is first built using Node.js and then served
+using Nginx.
 
-### `npm run eject`
+Docker image:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+`aayuxh/weatherapp:latest`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Kubernetes
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The application is deployed on Minikube using:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- Kubernetes Deployment
+- Kubernetes Service
 
-## Learn More
+The Deployment runs two replicas of the application.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+The Service exposes the application using NodePort.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Repository Structure
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```text
+weatherapp/
+├── public/
+├── src/
+├── k8s/
+│   ├── deployment.yaml
+│   └── service.yaml
+├── Dockerfile
+├── Jenkinsfile
+├── package.json
+└── README.md
