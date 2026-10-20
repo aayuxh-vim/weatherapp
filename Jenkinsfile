@@ -1,50 +1,101 @@
 pipeline {
     agent any
-    
+
     environment {
-        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials' 
-        DOCKER_IMAGE = 'aayuxh/weather-dashboard' 
-        TAG = "${env.BUILD_ID}"
+        IMAGE_NAME = "aayuxh/weatherapp"
+        IMAGE_TAG = "latest"
     }
 
     stages {
-        stage('Jenkins Checkout') {
+
+        stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        
-        stage('Build and Test') {
+
+        stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                sh 'npm ci'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'CI=true npm test -- --watchAll=false'
+            }
+        }
+
+        stage('Build React App') {
+            steps {
                 sh 'npm run build'
-                // Lint check as required testing substitute
-                sh 'npm run lint || echo "No lint errors"' 
             }
         }
-        
-        stage('Docker Build') {
+
+        stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE}:${TAG} -t ${DOCKER_IMAGE}:latest ."
+                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
             }
         }
-        
-        stage('Push Image') {
+
+        stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
-                    sh "docker push ${DOCKER_IMAGE}:${TAG}"
-                    sh "docker push ${DOCKER_IMAGE}:latest"
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login \
+                            -u "$DOCKER_USER" \
+                            --password-stdin
+
+                        docker push ${IMAGE_NAME}:${IMAGE_TAG}
+
+                        docker logout
+                    '''
                 }
             }
         }
-        
-        stage('Minikube Deployment') {
+
+        stage('Deploy to Minikube') {
             steps {
-                sh "sed -i 's|IMAGE_PLACEHOLDER|${DOCKER_IMAGE}:${TAG}|g' k8s/deployment.yaml"
-                sh "kubectl apply -f k8s/deployment.yaml"
-                sh "kubectl apply -f k8s/service.yaml"
+                sh '''
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+
+                    kubectl rollout restart deployment/weatherapp
+
+                    kubectl rollout status deployment/weatherapp --timeout=120s
+                '''
             }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh '''
+                    echo "=== Deployment ==="
+                    kubectl get deployment weatherapp
+
+                    echo "=== Pods ==="
+                    kubectl get pods -l app=weatherapp
+
+                    echo "=== Service ==="
+                    kubectl get service weatherapp-service
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Weather Dashboard deployed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed. Check the stage logs above.'
         }
     }
 }
